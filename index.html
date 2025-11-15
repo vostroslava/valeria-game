@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -6,150 +5,355 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Valeria Q&A</title>
 
+<!-- iOS app-like behaviour -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
 <style>
+    :root {
+        --bg-gradient: radial-gradient(circle at 0% 0%, #ffb6c9 0, transparent 55%),
+                       radial-gradient(circle at 100% 0%, #ffc46b 0, transparent 55%),
+                       radial-gradient(circle at 100% 100%, #8ec5fc 0, transparent 55%),
+                       radial-gradient(circle at 0% 100%, #e0c3fc 0, transparent 55%),
+                       #050816;
+        --card-bg: rgba(9, 10, 22, 0.92);
+        --accent: #ff7ac4;
+        --accent-soft: rgba(255, 122, 196, 0.18);
+        --text-main: #f9f9ff;
+        --text-muted: #b2b2d6;
+        --border-subtle: rgba(255, 255, 255, 0.08);
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
     body {
         margin: 0;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
-        padding: 20px;
-        color: #222;
+        min-height: 100vh;
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, Roboto, sans-serif;
+        background: var(--bg-gradient);
+        color: var(--text-main);
+        display: flex;
+        justify-content: center;
+        align-items: stretch;
+        padding: 18px 14px;
+        -webkit-font-smoothing: antialiased;
     }
 
-    .container {
-        max-width: 600px;
-        margin: 0 auto;
-        background: white;
-        padding: 25px;
-        border-radius: 16px;
-        box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    .frame {
+        width: 100%;
+        max-width: 460px;
+        border-radius: 28px;
+        padding: 18px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(6, 6, 18, 0.92);
+        backdrop-filter: blur(18px);
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+        animation: fadeIn 0.5s ease;
     }
 
-    h1 {
-        font-size: 26px;
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
         margin-bottom: 12px;
-        text-align: center;
+    }
+
+    .avatar {
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        background-image: linear-gradient(135deg, #ff9a9e, #fecfef);
+        padding: 2px;
+        position: relative;
+        flex-shrink: 0;
+    }
+
+    .avatar-inner {
+        width: 100%;
+        height: 100%;
+        border-radius: inherit;
+        background: url('https://images.pexels.com/photos/167636/pexels-photo-167636.jpeg?auto=compress&cs=tinysrgb&w=400') center/cover no-repeat;
+        filter: saturate(1.15);
+    }
+
+    .live-pill {
+        position: absolute;
+        right: -6px;
+        bottom: -6px;
+        background: linear-gradient(135deg, #ff3b6b, #ff9a62);
+        color: #fff;
+        font-size: 9px;
+        padding: 2px 6px;
+        border-radius: 999px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        box-shadow: 0 0 0 3px #050816;
+    }
+
+    header h1 {
+        font-size: 20px;
+        margin: 0 0 4px;
+        letter-spacing: 0.02em;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    header p {
+        margin: 0;
+        font-size: 13px;
+        color: var(--text-muted);
+    }
+
+    .chip-row {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+    }
+
+    .chip {
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        color: var(--text-muted);
+        background: rgba(255,255,255,0.06);
+    }
+
+    .chip--accent {
+        border-color: rgba(255, 122, 196, 0.6);
+        color: #ffe2f5;
+        background: rgba(255,122,196,0.22);
+    }
+
+    .card {
+        margin-top: 6px;
+        padding: 18px;
+        border-radius: 22px;
+        background: var(--card-bg);
+        border: 1px solid var(--border-subtle);
+    }
+
+    .label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--text-muted);
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .label-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #3cffb5;
+        box-shadow: 0 0 0 4px rgba(60, 255, 181, 0.12);
     }
 
     .question-box {
-        background: #f6f6f6;
-        padding: 20px;
-        border-radius: 14px;
-        font-size: 18px;
+        padding: 12px 10px 6px;
+        font-size: 17px;
         line-height: 1.45;
-        min-height: 80px;
+        color: #fdfdff;
+        min-height: 52px;
+        transition: opacity 0.2s ease;
+    }
+
+    .question-meta {
         display: flex;
-        justify-content: center;
+        justify-content: space-between;
         align-items: center;
-        text-align: center;
-        margin-bottom: 20px;
+        margin-top: 4px;
+        font-size: 11px;
+        color: var(--text-muted);
+    }
+
+    .topic-pill {
+        padding: 4px 9px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.12);
     }
 
     textarea {
         width: 100%;
-        height: 120px;
+        margin-top: 14px;
         padding: 12px;
-        border-radius: 10px;
-        border: 1px solid #ccc;
+        border-radius: 14px;
+        border: 1px solid rgba(255,255,255,0.18);
+        background: rgba(4, 7, 22, 0.9);
+        color: var(--text-main);
+        font-size: 15px;
         resize: none;
-        font-size: 16px;
+        min-height: 120px;
+        outline: none;
+    }
+
+    .btn-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 16px;
     }
 
     button {
-        width: 100%;
-        padding: 14px;
-        font-size: 17px;
+        border-radius: 999px;
+        padding: 12px 14px;
+        font-size: 15px;
         font-weight: 600;
         border: none;
-        background: #111;
-        color: white;
-        border-radius: 12px;
-        margin-top: 16px;
         cursor: pointer;
+        transition: all 0.12s ease;
     }
 
-    button:hover {
-        background: #000;
+    .btn-primary {
+        background: linear-gradient(135deg, #ff7ac4, #ffb86b);
+        color: #1b0614;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
     }
 
-    .small-note {
-        text-align: center;
-        margin-top: 18px;
-        font-size: 14px;
-        color: #777;
+    .btn-primary:active {
+        transform: scale(0.97);
+    }
+
+    .btn-secondary {
+        background: rgba(255,255,255,0.08);
+        color: #f1e6ff;
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .toast {
+        position: fixed;
+        left: 50%;
+        bottom: 22px;
+        transform: translateX(-50%);
+        padding: 10px 16px;
+        border-radius: 999px;
+        background: rgba(12, 14, 32, 0.96);
+        color: #f6f2ff;
+        font-size: 13px;
+        display: none;
+        border: 1px solid rgba(255,255,255,0.16);
     }
 </style>
 </head>
 
 <body>
-<div class="container">
-    <h1>Вопрос дня</h1>
+<div class="frame">
+    <header>
+        <div class="avatar">
+            <div class="avatar-inner"></div>
+            <div class="live-pill">live</div>
+        </div>
+        <div>
+            <h1>🎙 Вопрос для Валерии</h1>
+            <p>Маленькая сцена, где слышно тебя.</p>
+        </div>
+    </header>
 
-    <div id="questionBox" class="question-box">Загрузка вопроса...</div>
+    <div class="chip-row">
+        <div class="chip chip--accent">Singer · Live</div>
+        <div class="chip">Soul talk</div>
+        <div class="chip">1 вопрос за раз</div>
+    </div>
 
-    <textarea id="answerInput" placeholder="Твой ответ..."></textarea>
+    <section class="card">
+        <div class="label"><span class="label-dot"></span>Вопрос дня</div>
 
-    <button onclick="sendAnswer()">Отправить</button>
-    <button onclick="loadNewQuestion()" style="background:#444;margin-top:10px;">Другой вопрос</button>
+        <div id="questionBox" class="question-box">Загрузка вопроса...</div>
 
-    <div class="small-note">Ответ автоматически придёт Славе</div>
+        <div class="question-meta">
+            <div id="topicPill" class="topic-pill">Тема: —</div>
+            <div>Random</div>
+        </div>
+
+        <textarea id="answerInput" placeholder="Напиши так, как чувствуешь."></textarea>
+
+        <div class="btn-row">
+            <button class="btn-primary" onclick="sendAnswer()">Отправить ➤</button>
+            <button class="btn-secondary" onclick="loadNewQuestion()">🎲 Другой</button>
+        </div>
+    </section>
 </div>
+
+<div id="toast" class="toast">Ответ отправлен.</div>
 
 <script>
 const questions = [
-    "Какие маленькие моменты в жизни делают тебя искренне счастливой?",
-    "Что для тебя музыка — работа, вдохновение или способ проживать эмоции?",
-    "Где тебе больше всего нравится петь, чтобы чувствовать кайф?",
-    "Если я правильно заметил, то у тебя очень мало косметики в повседневности — почему так комфортнее?",
-    "Какие маленькие знаки внимания для тебя самые приятные?",
-    "Если готова — расскажи что-нибудь очень тёплое или личное, но безопасное для тебя.",
-    "Что для тебя значит стабильность и уют в отношениях?",
-    "Если выбирать — выступление, повседневность или образ в инстаграме: какой ты считаешь настоящей собой?",
-    "Что в людях привлекает тебя сильнее всего?",
-    "Ты легко подпускаешь людей или держишь границы?",
-    "Что тебе больше всего нравится в Минске?",
-    "Что вкусного любишь покушать, от чего кайфуешь?",
-    "Какой кальян тебе нравится и разбираешься ли ты в них?",
-    "Если говорить честно — какие отношения тебе комфортны?",
-    "Топ песен, которые тебя цепляют, и те, что уже раздражают?",
-    "Планы на развитие — что хочешь в себе усилить?",
-    "Какие жизненные ценности для тебя нерушимые?",
-    "Что тебя вдохновляет на изменения?"
+    { text: "Какие маленькие моменты делают тебя искренне счастливой?", topic: "Теплые моменты" },
+    { text: "Что для тебя музыка — работа, вдохновение или проживание эмоций?", topic: "Музыка" },
+    { text: "Где тебе больше всего нравится петь?", topic: "Музыка" },
+    { text: "Если заметил правильно — ты почти без косметики. Это про комфорт?", topic: "Естественность" },
+    { text: "Какие знаки внимания тебя искренне трогают?", topic: "Забота" },
+    { text: "Расскажи что-то тёплое и личное, но безопасное.", topic: "Личное" },
+    { text: "Что для тебя уют и стабильность в отношениях?", topic: "Отношения" },
+    { text: "Где ты настоящая: сцена, жизнь или инста?", topic: "Образы" },
+    { text: "Что в людях притягивает сильнее всего?", topic: "Люди" },
+    { text: "Ты подпускаешь легко или держишь границы?", topic: "Границы" },
+    { text: "Что тебе больше всего нравится в Минске?", topic: "Город" },
+    { text: "Что вкусного любишь?", topic: "Еда" },
+    { text: "Какой кальян нравится? Разбираешься ли?", topic: "Кальян" },
+    { text: "Какие отношения тебе комфортны?", topic: "Отношения" },
+    { text: "Какие треки цепляют? Какие — уже нет?", topic: "Музыка" },
+    { text: "Что хочешь усилить в себе в ближайшее время?", topic: "Развитие" },
+    { text: "Какие ценности для тебя нерушимы?", topic: "Ценности" },
+    { text: "Что тебя вдохновляет меняться?", topic: "Вдохновение" }
 ];
 
-let currentQuestion = "";
+let currentQuestion = null;
 
 function loadNewQuestion() {
     const q = questions[Math.floor(Math.random() * questions.length)];
     currentQuestion = q;
-    document.getElementById("questionBox").textContent = q;
+    document.getElementById("questionBox").textContent = q.text;
+    document.getElementById("topicPill").textContent = "Тема: " + q.topic;
 }
 
 document.addEventListener("DOMContentLoaded", loadNewQuestion);
 
+// основной рабочий webhook
 const webhookUrl = "https://script.google.com/macros/s/AKfycbwGsYzw4o31i9AzDo-kG832v1CtOnWpm8YH-Xvti5sG7_p9-99O27U7sqkqdWzI3nowmQ/exec";
 
+function showToast(text) {
+    const toast = document.getElementById("toast");
+    toast.textContent = text;
+    toast.style.display = "block";
+    setTimeout(() => { toast.style.display = "none"; }, 2100);
+}
+
 function sendAnswer() {
-    const answer = document.getElementById("answerInput").value.trim();
-    if (!answer) {
-        alert("Напиши хотя бы пару слов");
-        return;
-    }
+    const answerEl = document.getElementById("answerInput");
+    const answer = answerEl.value.trim();
+
+    if (!answer) return showToast("Напиши пару слов...");
 
     fetch(webhookUrl, {
         method: "POST",
+        mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-            questionText: currentQuestion,
-            answer: answer,
+            questionText: currentQuestion.text,
+            topic: currentQuestion.topic,
+            answer,
             who: "Valeria"
         })
-    }).then(r => {
-        alert("Ответ отправлен!");
-        document.getElementById("answerInput").value = "";
-        loadNewQuestion();
-    }).catch(err => alert("Ошибка отправки"));
+    });
+
+    answerEl.value = "";
+    loadNewQuestion();
+    showToast("Ответ отправлен.");
 }
 </script>
-
 </body>
 </html>
