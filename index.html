@@ -1,0 +1,155 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Valeria Q&A</title>
+
+<style>
+    body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+        padding: 20px;
+        color: #222;
+    }
+
+    .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        padding: 25px;
+        border-radius: 16px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+        font-size: 26px;
+        margin-bottom: 12px;
+        text-align: center;
+    }
+
+    .question-box {
+        background: #f6f6f6;
+        padding: 20px;
+        border-radius: 14px;
+        font-size: 18px;
+        line-height: 1.45;
+        min-height: 80px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    textarea {
+        width: 100%;
+        height: 120px;
+        padding: 12px;
+        border-radius: 10px;
+        border: 1px solid #ccc;
+        resize: none;
+        font-size: 16px;
+    }
+
+    button {
+        width: 100%;
+        padding: 14px;
+        font-size: 17px;
+        font-weight: 600;
+        border: none;
+        background: #111;
+        color: white;
+        border-radius: 12px;
+        margin-top: 16px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background: #000;
+    }
+
+    .small-note {
+        text-align: center;
+        margin-top: 18px;
+        font-size: 14px;
+        color: #777;
+    }
+</style>
+</head>
+
+<body>
+<div class="container">
+    <h1>Вопрос дня</h1>
+
+    <div id="questionBox" class="question-box">Загрузка вопроса...</div>
+
+    <textarea id="answerInput" placeholder="Твой ответ..."></textarea>
+
+    <button onclick="sendAnswer()">Отправить</button>
+    <button onclick="loadNewQuestion()" style="background:#444;margin-top:10px;">Другой вопрос</button>
+
+    <div class="small-note">Ответ автоматически придёт Славе</div>
+</div>
+
+<script>
+const questions = [
+    "Какие маленькие моменты в жизни делают тебя искренне счастливой?",
+    "Что для тебя музыка — работа, вдохновение или способ проживать эмоции?",
+    "Где тебе больше всего нравится петь, чтобы чувствовать кайф?",
+    "Если я правильно заметил, то у тебя очень мало косметики в повседневности — почему так комфортнее?",
+    "Какие маленькие знаки внимания для тебя самые приятные?",
+    "Если готова — расскажи что-нибудь очень тёплое или личное, но безопасное для тебя.",
+    "Что для тебя значит стабильность и уют в отношениях?",
+    "Если выбирать — выступление, повседневность или образ в инстаграме: какой ты считаешь настоящей собой?",
+    "Что в людях привлекает тебя сильнее всего?",
+    "Ты легко подпускаешь людей или держишь границы?",
+    "Что тебе больше всего нравится в Минске?",
+    "Что вкусного любишь покушать, от чего кайфуешь?",
+    "Какой кальян тебе нравится и разбираешься ли ты в них?",
+    "Если говорить честно — какие отношения тебе комфортны?",
+    "Топ песен, которые тебя цепляют, и те, что уже раздражают?",
+    "Планы на развитие — что хочешь в себе усилить?",
+    "Какие жизненные ценности для тебя нерушимые?",
+    "Что тебя вдохновляет на изменения?"
+];
+
+let currentQuestion = "";
+
+function loadNewQuestion() {
+    const q = questions[Math.floor(Math.random() * questions.length)];
+    currentQuestion = q;
+    document.getElementById("questionBox").textContent = q;
+}
+
+document.addEventListener("DOMContentLoaded", loadNewQuestion);
+
+const webhookUrl = "https://script.google.com/macros/s/AKfycbwGsYzw4o31i9AzDo-kG832v1CtOnWpm8YH-Xvti5sG7_p9-99O27U7sqkqdWzI3nowmQ/exec";
+
+function sendAnswer() {
+    const answer = document.getElementById("answerInput").value.trim();
+    if (!answer) {
+        alert("Напиши хотя бы пару слов");
+        return;
+    }
+
+    fetch(webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            questionText: currentQuestion,
+            answer: answer,
+            who: "Valeria"
+        })
+    }).then(r => {
+        alert("Ответ отправлен!");
+        document.getElementById("answerInput").value = "";
+        loadNewQuestion();
+    }).catch(err => alert("Ошибка отправки"));
+}
+</script>
+
+</body>
+</html>
