@@ -470,140 +470,114 @@
     <div class="toast-dot"></div>
     <div id="toastText">Ответ отправлен.</div>
 </div>
-
 <script>
-// URL таблицы
 const SHEET_URL =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vSzvKeCKWOgUi4D4dUTbISt-3bMK3B1QpmqJapgJfFRtpBOkwdrxR_uOU5JJrqltGFFgA0qZxSgJPnb/pub?gid=0&single=true&output=csv";
 
-let questions = [];
+const webhookUrl =
+  "https://script.google.com/macros/s/AKfycbwGsYzw4o31i9AzDo-kG832v1CtOnWpm8YH-Xvti5sG7_p9-99O27U7sqkqdWzI3nowmQ/exec";
 
-// Маппинг уровней: и цифры, и слова
 const levelMap = {
   "1": "light",
   "2": "warm",
   "3": "deep",
-  "light": "light",
-  "warm": "warm",
-  "deep": "deep"
+  light: "light",
+  warm: "warm",
+  deep: "deep"
 };
 
-// Простая функция для разбора CSV
+let questions = [];
+let currentQuestion = null;
+let currentLevel = "light";
+
+const el = {
+  box: document.getElementById("questionBox"),
+  topic: document.getElementById("topicPill"),
+  answer: document.getElementById("answerInput"),
+  toast: document.getElementById("toast"),
+  toastText: document.getElementById("toastText"),
+};
+
+/* Универсальный CSV-парсер с поддержкой кавычек */
 function parseCSV(csv) {
-  const lines = csv.split("\n").filter(line => line.trim() !== "");
-  if (!lines.length) return [];
-
-  const headers = lines[0].split(",").map(h => h.trim());
-
-  return lines.slice(1).map(line => {
-    const values = line.split(",").map(v => v.trim());
-    let row = {};
-    headers.forEach((key, i) => {
-      row[key] = values[i];
-    });
-    return row;
-  });
+  return csv
+    .trim()
+    .split("\n")
+    .map(line => line.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g).map(v => v.replace(/^"|"$/g, "")));
 }
 
-// Загрузка вопросов из Google Sheets
+/* Загрузка вопросов */
 async function loadQuestionsFromSheet() {
   try {
-    const res = await fetch(SHEET_URL);
-    const csv = await res.text();
+    const csv = await (await fetch(SHEET_URL)).text();
+    const rows = parseCSV(csv);
+    const headers = rows.shift().map(h => h.trim());
 
-    questions = parseCSV(csv)
-      // фильтр по active: true / TRUE / 1 / ИСТИНА
+    questions = rows
+      .map(values =>
+        Object.fromEntries(headers.map((k, i) => [k, values[i] || ""]))
+      )
       .filter(q => {
-        if (q.active == null) return true; // если пусто — считаем активным
-        const v = String(q.active).trim().toLowerCase();
-        return v === "true" || v === "1" || v === "истина";
+        const v = q.active?.toLowerCase();
+        return !v || v === "true" || v === "1" || v === "истина";
       })
       .map(q => ({
         id: q.id,
         text: q.question,
         topic: q.topic,
-        level: levelMap[String(q.level).trim().toLowerCase()] || "light"
+        level: levelMap[q.level?.toLowerCase()] || "light"
       }));
 
-    // На всякий случай: если совсем нет вопросов
     if (!questions.length) {
-      document.getElementById("questionBox").textContent =
-        "Нет активных вопросов. Проверь таблицу.";
-      document.getElementById("topicPill").textContent = "Тема: —";
+      el.box.textContent = "Нет активных вопросов. Проверь таблицу.";
+      el.topic.textContent = "Тема: —";
     }
   } catch (e) {
     console.error(e);
-    document.getElementById("questionBox").textContent =
-      "Ошибка загрузки вопросов.";
+    el.box.textContent = "Ошибка загрузки вопросов.";
   }
 }
 
-let currentQuestion = null;
-let currentLevel = "light";
-
+/* Выбор случайного вопроса */
 function loadNewQuestion() {
   if (!questions.length) {
-    document.getElementById("questionBox").textContent =
-      "Нет активных вопросов. Проверь таблицу.";
-    document.getElementById("topicPill").textContent = "Тема: —";
-    currentQuestion = null;
-    return;
+    el.box.textContent = "Нет активных вопросов.";
+    el.topic.textContent = "Тема: —";
+    return (currentQuestion = null);
   }
 
   const pool = questions.filter(q => q.level === currentLevel);
   const source = pool.length ? pool : questions;
-  const q = source[Math.floor(Math.random() * source.length)];
 
-  if (!q) {
-    document.getElementById("questionBox").textContent =
-      "Не удалось выбрать вопрос.";
-    document.getElementById("topicPill").textContent = "Тема: —";
-    currentQuestion = null;
-    return;
-  }
+  currentQuestion = source[Math.floor(Math.random() * source.length)];
 
-  currentQuestion = q;
-  document.getElementById("questionBox").textContent = q.text || "Пустой вопрос";
-  document.getElementById("topicPill").textContent = "Тема: " + (q.topic || "—");
+  el.box.textContent = currentQuestion.text || "Пустой вопрос";
+  el.topic.textContent = "Тема: " + (currentQuestion.topic || "—");
 }
 
+/* Выбор уровня */
 function setLevel(level) {
   currentLevel = level;
-  document.querySelectorAll(".mode-btn").forEach(btn => {
-    btn.classList.toggle("mode-btn--active", btn.dataset.level === level);
-  });
+  document
+    .querySelectorAll(".mode-btn")
+    .forEach(b => b.classList.toggle("mode-btn--active", b.dataset.level === level));
+
   loadNewQuestion();
 }
 
-document.addEventListener("DOMContentLoaded", async () => {
-  await loadQuestionsFromSheet();
-  loadNewQuestion();
-});
-
-const webhookUrl =
-  "https://script.google.com/macros/s/AKfycbwGsYzw4o31i9AzDo-kG832v1CtOnWpm8YH-Xvti5sG7_p9-99O27U7sqkqdWzI3nowmQ/exec";
-
+/* Toast */
 function showToast(message) {
-  const toast = document.getElementById("toast");
-  const text = document.getElementById("toastText");
-  text.textContent = message;
-  toast.style.display = "flex";
-  setTimeout(() => {
-    toast.style.display = "none";
-  }, 2200);
+  el.toastText.textContent = message;
+  el.toast.style.display = "flex";
+  setTimeout(() => (el.toast.style.display = "none"), 2000);
 }
 
+/* Отправка ответа */
 function sendAnswer() {
-  const answerEl = document.getElementById("answerInput");
-  const answer = answerEl.value.trim();
-  if (!answer) {
-    showToast("Напиши хотя бы пару слов — хочется услышать твой голос.");
-    return;
-  }
-  if (!currentQuestion) {
-    showToast("Подожди секунду, загружаю вопрос.");
-    return;
-  }
+  const answer = el.answer.value.trim();
+
+  if (!answer) return showToast("Напиши хотя бы пару слов.");
+  if (!currentQuestion) return showToast("Вопрос загружается.");
 
   fetch(webhookUrl, {
     method: "POST",
@@ -612,20 +586,21 @@ function sendAnswer() {
     body: JSON.stringify({
       questionText: currentQuestion.text,
       topic: currentQuestion.topic,
-      answer: answer,
-      who: "Valeria"
-    })
-  })
-    .then(() => {
-      answerEl.value = "";
-      loadNewQuestion();
-      showToast("Ответ отправлен — спасибо, что делишься.");
-    })
-    .catch(err => {
-      console.error(err);
-      showToast("Кажется, сеть подвисла. Попробуй ещё раз чуть позже.");
-    });
+      answer,
+      who: "Valeria",
+    }),
+  }).then(() => {
+    el.answer.value = "";
+    loadNewQuestion();
+    showToast("Ответ отправлен — спасибо.");
+  });
 }
+
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadQuestionsFromSheet();
+  loadNewQuestion();
+});
 </script>
+
 </body>
 </html>
