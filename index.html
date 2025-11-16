@@ -134,90 +134,30 @@
             background: radial-gradient(circle at 0 0, rgba(255,122,196,0.25) 0, transparent 60%);
         }
 
-       /* Блок выбора уровня — отдельная карточка */
-.modes-block {
-    margin: 10px 0 16px;
-    padding: 10px 12px 12px;
-    border-radius: 18px;
-    background:
-        radial-gradient(circle at 0 0, rgba(255,122,196,0.18) 0, transparent 60%),
-        rgba(8, 8, 24, 0.96);
-    border: 1px solid rgba(255,255,255,0.12);
-    box-shadow: 0 16px 30px rgba(0,0,0,0.65);
-}
+        /* Новый блок: выбор глубины вопросов */
+        .modes {
+            display: flex;
+            gap: 6px;
+            margin: 4px 0 12px;
+            flex-wrap: wrap;
+        }
 
-/* Заголовок над кнопками */
-.modes-title {
-    font-size: 12px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    margin-bottom: 8px;
-}
+        .mode-btn {
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            border: 1px solid rgba(255,255,255,0.16);
+            background: rgba(255,255,255,0.02);
+            color: var(--text-muted);
+            cursor: pointer;
+        }
 
-/* Ряд кнопок уровней */
-.modes {
-    display: flex;
-    gap: 8px;
-}
+        .mode-btn--active {
+            border-color: rgba(255,122,196,0.8);
+            background: radial-gradient(circle at 0 0, rgba(255,122,196,0.35) 0, transparent 60%);
+            color: #ffe7f7;
+        }
 
-/* Объёмные кнопки уровней — крупнее и 3D */
-.mode-btn {
-    flex: 1;
-    padding: 10px 0;
-    border-radius: 999px;
-    font-size: 13px;
-    font-weight: 600;
-    border: 1px solid rgba(255,255,255,0.18);
-    background: radial-gradient(circle at 0 0, rgba(255,255,255,0.08) 0, transparent 60%),
-                linear-gradient(145deg, rgba(20,20,40,0.98), rgba(10,10,26,1));
-    color: var(--text-muted);
-    cursor: pointer;
-    box-shadow:
-        0 10px 22px rgba(0,0,0,0.8),
-        0 0 0 1px rgba(0,0,0,0.6);
-    transform: translateZ(0);
-    transition:
-        transform 0.13s ease,
-        box-shadow 0.15s ease,
-        background 0.15s ease,
-        border-color 0.15s ease,
-        color 0.15s ease;
-    white-space: nowrap;
-}
-
-.mode-btn:hover {
-    transform: translateY(-1px);
-    box-shadow:
-        0 14px 30px rgba(0,0,0,0.9),
-        0 0 0 1px rgba(0,0,0,0.7);
-    background: radial-gradient(circle at 0 0, rgba(255,255,255,0.1) 0, transparent 60%),
-                linear-gradient(145deg, rgba(30,30,60,1), rgba(12,12,30,1));
-}
-
-/* Активная кнопка уровня — заметный градиент и подсветка */
-.mode-btn--active {
-    border-color: rgba(255,122,196,0.9);
-    color: #1b0614;
-    background:
-        radial-gradient(circle at 0 0, rgba(255,255,255,0.18) 0, transparent 60%),
-        linear-gradient(135deg, #ff7ac4, #ffb86b);
-    box-shadow:
-        0 16px 34px rgba(0,0,0,0.95),
-        0 0 22px rgba(255,122,196,0.9);
-}
-
-/* На мобильных — чуть компактнее, но всё ещё объёмно */
-@media (max-width: 480px) {
-    .modes-block {
-        padding: 9px 10px 10px;
-        margin: 8px 0 14px;
-    }
-    .mode-btn {
-        font-size: 12px;
-        padding: 9px 0;
-    }
-}
         .card {
             margin-top: 6px;
             padding: 18px 16px 16px;
@@ -416,26 +356,17 @@
     </header>
 
     <div class="chip-row">
-    <div class="chip chip--accent">Singer · Live</div>
-    <div class="chip">Soul talk</div>
-    <div class="chip">1&nbsp;вопрос за раз</div>
-</div>
-
-<div class="modes-block">
-    <div class="modes-title">Выбери уровень вопроса</div>
-    <div class="modes">
-        <button class="mode-btn mode-btn--active" data-level="light" onclick="setLevel('light')">
-            Легко
-        </button>
-        <button class="mode-btn" data-level="warm" onclick="setLevel('warm')">
-            Тепло
-        </button>
-        <button class="mode-btn" data-level="deep" onclick="setLevel('deep')">
-            Глубже
-        </button>
+        <div class="chip chip--accent">Singer · Live</div>
+        <div class="chip">Soul talk</div>
+        <div class="chip">1&nbsp;вопрос за раз</div>
     </div>
-</div>
 
+    <!-- Новый блок: режимы глубины -->
+    <div class="modes">
+        <button class="mode-btn mode-btn--active" data-level="light" onclick="setLevel('light')">Легко</button>
+        <button class="mode-btn" data-level="warm" onclick="setLevel('warm')">Тепло</button>
+        <button class="mode-btn" data-level="deep" onclick="setLevel('deep')">Глубже</button>
+    </div>
 
     <section class="card">
         <div class="card-inner">
@@ -470,108 +401,372 @@
     <div class="toast-dot"></div>
     <div id="toastText">Ответ отправлен.</div>
 </div>
-<script>
 
-// ЛОКАЛЬНАЯ БАЗА ВОПРОСОВ — тут редактируешь вручную
+<script>
 const questions = [
-    { id: 1, text: "Какой момент этого года сделал тебя счастливее всего?", topic: "Отношения", level: "light" },
-    { id: 2, text: "О чём ты мечтала в детстве больше всего?", topic: "Детство", level: "light" },
-    { id: 3, text: "Что для тебя идеальное утро?", topic: "Быт", level: "light" },
-    { id: 4, text: "Как выглядит человек, которому ты безоговорочно доверяешь?", topic: "Психология", level: "warm" },
-    { id: 5, text: "Какое чувство ты скрываешь чаще всего?", topic: "Эмоции", level: "warm" },
-    { id: 6, text: "Какая рана тебя сформировала?", topic: "Глубина", level: "deep" },
-    { id: 7, text: "Какое решение в жизни оказалось самым правильным?", topic: "Жизнь", level: "warm" },
-    { id: 8, text: "Что ты считаешь своей сильнейшей чертой?", topic: "Личность", level: "light" },
-    { id: 9, text: "Что бы ты сказала себе 16-летней?", topic: "Саморефлексия", level: "deep" },
-    { id: 10, text: "Когда ты чувствуешь себя любимой?", topic: "Отношения", level: "deep" }
+  // Тёплые моменты
+  { 
+    text: "Какие маленькие моменты в жизни делают тебя искренне счастливой?", 
+    topic: "Тёплые моменты", 
+    level: "personal" 
+  },
+
+  // Музыка и сцена
+  { 
+    text: "С чего для тебя началась музыка: был ли какой-то момент «вот теперь это серьёзно», а не просто школьные кружки?", 
+    topic: "Музыка и сцена", 
+    level: "personal" 
+  },
+  { 
+    text: "Кто первым поверил в тебя как в певицу так, что ты сама начала относиться к себе по-другому?", 
+    topic: "Музыка и сцена", 
+    level: "personal" 
+  },
+  { 
+    text: "Был ли на пути в музыку поворот, когда план «А» сломался и пришлось придумывать новый маршрут?", 
+    topic: "Музыка и сцена", 
+    level: "deep" 
+  },
+  { 
+    text: "Был ли концерт или событие, которое тебе до сих пор вспоминается — от стыда, страха или, наоборот, от восторга?", 
+    topic: "Музыка и сцена", 
+    level: "deep" 
+  },
+  { 
+    text: "Что тебе важнее во время выступления: идеальное исполнение или контакт глазами и эмоциями с людьми?", 
+    topic: "Музыка и сцена", 
+    level: "personal" 
+  },
+  { 
+    text: "Если одним словом: музыка для тебя больше про работу, кайф или способ вообще жить и справляться с собой?", 
+    topic: "Музыка и сцена", 
+    level: "personal" 
+  },
+  { 
+    text: "Бывает ли, что ты ловишь себя на мысли: «Сейчас я пела больше ради денег, чем ради себя», — и как ты к этому относишься?", 
+    topic: "Музыка и сцена", 
+    level: "deep" 
+  },
+  { 
+    text: "Где тебе легче всего раскрыться: на живой сцене, в студии, в домашней записи или в сторис?", 
+    topic: "Музыка и сцена", 
+    level: "personal" 
+  },
+  { 
+    text: "Если выбирать между тремя форматами — выступления, повседневность и Инста, — где тебе спокойнее всего, а где ощущение, что ты как на ладони?", 
+    topic: "Музыка и сцена", 
+    level: "personal" 
+  },
+  { 
+    text: "Если бы пришлось оставить только один формат — сцена, студия или соцсети, — что бы ты выбрала и почему?", 
+    topic: "Музыка и сцена", 
+    level: "personal" 
+  },
+  { 
+    text: "Какие площадки и форматы для тебя «чистый кайф» — куда ты выходишь и уже заранее улыбаешься?", 
+    topic: "Музыка и сцена", 
+    level: "light" 
+  },
+  { 
+    text: "Был ли у тебя формат или место, куда ты теперь точно не пойдёшь, даже за очень хороший гонорар?", 
+    topic: "Музыка и сцена", 
+    level: "personal" 
+  },
+
+  // Личность и внутренняя жизнь
+  { 
+    text: "Как ты сама чувствуешь разницу между Валерией на сцене и Валерией, которая просто идёт по городу по своим делам?", 
+    topic: "Личность и внутренняя жизнь",
+    level: "personal" 
+  },
+  { 
+    text: "Правда ли, что в обычной жизни тебе ближе минимум косметики — как ты сама относишься к своей естественности?", 
+    topic: "Личность и внутренняя жизнь",
+    level: "light" 
+  },
+  { 
+    text: "Есть ли у тебя внутренний «защитный юмор» — над чем ты любишь мягко шутить про себя?", 
+    topic: "Личность и внутренняя жизнь",
+    level: "personal" 
+  },
+  { 
+    text: "В какой момент самоирония перестаёт быть лёгкой и превращается уже в по-настоящему больное место?", 
+    topic: "Личность и внутренняя жизнь",
+    level: "deep" 
+  },
+  { 
+    text: "В каких моментах жизни ты особенно отчётливо чувствуешь: «я теперь взрослая и сильная»?", 
+    topic: "Личность и внутренняя жизнь",
+    level: "personal" 
+  },
+  { 
+    text: "А когда позволяешь себе быть маленькой девочкой, которая может просто прижаться и ничего не решать?", 
+    topic: "Личность и внутренняя жизнь",
+    level: "deep" 
+  },
+  { 
+    text: "Как тебе вообще идея показывать свою уязвимость людям — это для тебя больше про доверие или про риск?", 
+    topic: "Личность и внутренняя жизнь",
+    level: "deep" 
+  },
+  { 
+    text: "Был ли в твоей жизни эпизод, после которого ты почувствовала: «я уже не та, что была раньше»?", 
+    topic: "Личность и внутренняя жизнь",
+    level: "deep" 
+  },
+  { 
+    text: "Какой выбор из прошлого ты сейчас видишь как поворотный, даже если тогда он казался просто очередным шагом?", 
+    topic: "Личность и внутренняя жизнь",
+    level: "deep" 
+  },
+  { 
+    text: "Есть ли история, которую ты однажды расскажешь в книге или в большом интервью, но пока держишь внутри?", 
+    topic: "Личность и внутренняя жизнь",
+    level: "deep" 
+  },
+  { 
+    text: "Есть ли у тебя правило «так со мной нельзя» — что туда входит в первую очередь?", 
+    topic: "Личность и внутренняя жизнь",
+    level: "personal" 
+  },
+  { 
+    text: "Какие твои личные принципы ты ни разу не нарушила, хотя было очень соблазнительно?", 
+    topic: "Личность и внутренняя жизнь",
+    level: "personal" 
+  },
+  { 
+    text: "Когда жизнь проверяет вот эти твои границы «так со мной нельзя», что ты обычно делаешь — становишься жёстче или сначала пробуешь мягко договориться?", 
+    topic: "Личность и внутренняя жизнь",
+    level: "deep" 
+  },
+
+  // Отношения
+  { 
+    text: "Если без подробностей: как ты сейчас чувствуешь тему отношений — что для тебя в паре самое важное и тёплое, чтобы было между вами?", 
+    topic: "Отношения",
+    level: "personal" 
+  },
+
+  // Город и ощущение дома
+  { 
+    text: "Что тебе больше всего нравится в Минске — вот прямо из твоих ощущений, а не по справочнику города?", 
+    topic: "Город и ощущение дома",
+    level: "light" 
+  },
+  { 
+    text: "Что именно в Питере для тебя не легло: атмосфера, люди, влажность, серость, ритм — или что-то ещё?", 
+    topic: "Город и ощущение дома",
+    level: "personal" 
+  },
+  { 
+    text: "Если представить Минск и Питер как людей, какими характерами они были бы и с кем тебе проще ужиться?", 
+    topic: "Город и ощущение дома",
+    level: "light" 
+  },
+
+  // Отдых и кальяны
+  { 
+    text: "Как кальяны вообще появились в твоей жизни — случайно с компанией или ты сама к этому пришла?", 
+    topic: "Отдых и кальяны",
+    level: "light" 
+  },
+  { 
+    text: "Любишь ли ты разбираться в табаках, вкусах, крепости, или для тебя кальян — это больше просто фон для разговора и атмосферы?", 
+    topic: "Отдых и кальяны",
+    level: "light" 
+  },
+
+  // Еда и маленькие радости
+  { 
+    text: "Какие блюда или кухни у тебя в списке «могу есть почти всегда и в любом состоянии»?", 
+    topic: "Еда и маленькие радости",
+    level: "light" 
+  },
+  { 
+    text: "Есть ли место, куда ты любишь возвращаться именно из-за того, как там кормят и встречают?", 
+    topic: "Еда и маленькие радости",
+    level: "light" 
+  },
+
+  // Путешествия и места силы
+  { 
+    text: "Есть ли у тебя город или страна мечты, где ты хотела бы пожить хотя бы пару месяцев?", 
+    topic: "Путешествия и места силы",
+    level: "light" 
+  },
+  { 
+    text: "Ты больше про шумный мегаполис, тёплое море, маленький европейский город или какой-то свой формат места?", 
+    topic: "Путешествия и места силы",
+    level: "light" 
+  },
+  { 
+    text: "В каком месте ты в последний раз поймала ощущение: «Вот здесь я как будто на своей территории»?", 
+    topic: "Путешествия и места силы",
+    level: "personal" 
+  },
+
+  // Музыкальный вкус
+  { 
+    text: "Какую музыку ты включаешь, когда хочешь вообще забыть про работу и просто прожить вечер?", 
+    topic: "Музыкальный вкус",
+    level: "personal" 
+  },
+  { 
+    text: "Есть ли артист или группа, которых ты очень любишь, но редко публично включаешь, потому что это слишком личная история?", 
+    topic: "Музыкальный вкус",
+    level: "deep" 
+  },
+  { 
+    text: "С кем из музыкантов ты чувствуешь внутреннее родство, даже если у вас совершенно разный стиль?", 
+    topic: "Музыкальный вкус",
+    level: "personal" 
+  },
+
+  // Книги и кино
+  { 
+    text: "Вспоминается ли книга или фильм, после которого ты ходила и долго переваривала всё внутри?", 
+    topic: "Книги и кино",
+    level: "personal" 
+  },
+  { 
+    text: "Какие истории в книгах или кино обычно цепляют тебя сильнее всего: про любовь, путь героя, психику, судьбу, юмор?", 
+    topic: "Книги и кино",
+    level: "personal" 
+  },
+  { 
+    text: "Есть ли один автор — писатель или режиссёр, — к которому ты возвращаешься в разные периоды жизни?", 
+    topic: "Книги и кино",
+    level: "personal" 
+  },
+
+  // Блог и Инстаграм
+  { 
+    text: "Насколько ты сама чувствуешь, что в Инстаграме ты «такая же, как в жизни»?", 
+    topic: "Блог и Инстаграм",
+    level: "personal" 
+  },
+  { 
+    text: "Есть ли у тебя граница: что ты спокойно показываешь подписчикам, а что всегда останется только для своих?", 
+    topic: "Блог и Инстаграм",
+    level: "personal" 
+  },
+  { 
+    text: "В какие моменты блог ощущается для тебя как пространство свободы, а в какие — как обязанность «надо что-то выложить»?", 
+    topic: "Блог и Инстаграм",
+    level: "personal" 
+  },
+
+  // Песни и репертуар
+  { 
+    text: "Какие песни ты до сих пор поёшь с удовольствием, даже если исполняла их уже сотни раз?", 
+    topic: "Песни и репертуар",
+    level: "light" 
+  },
+  { 
+    text: "Есть ли треки, которые ты берёшь в сет чисто из-за ожиданий людей, хотя сама от них устала?", 
+    topic: "Песни и репертуар",
+    level: "personal" 
+  },
+  { 
+    text: "Как ты обновляешь свой репертуар, чтобы самой не заскучать от одного и того же?", 
+    topic: "Песни и репертуар",
+    level: "personal" 
+  },
+
+  // Будущее и амбиции
+  { 
+    text: "Каким ты видишь следующий шаг в своей карьере: больше масштаба, больше глубины, новый формат, свой проект?", 
+    topic: "Будущее и амбиции",
+    level: "personal" 
+  },
+  { 
+    text: "Есть ли у тебя «мечта из разряда дерзких» — что-то, что ты пока мало кому проговариваешь, но оно живёт внутри?", 
+    topic: "Будущее и амбиции",
+    level: "deep" 
+  },
+  { 
+    text: "Как ты представляешь себе идеальный баланс через несколько лет: сколько там будет сцены, личной жизни, отдыха и своих проектов?", 
+    topic: "Будущее и амбиции",
+    level: "deep" 
+  },
+  { 
+    text: "Чему, помимо музыки, тебе хотелось бы научиться или прокачаться — в людях, в себе, в мире?", 
+    topic: "Будущее и амбиции",
+    level: "personal" 
+  },
+  { 
+    text: "Какая взрослая версия тебя самой кажется тебе самой притягательной — и что ты уже сейчас делаешь, чтобы к ней прийти?", 
+    topic: "Будущее и амбиции",
+    level: "deep" 
+  }
 ];
 
-// Память о пройденных вопросах для каждого уровня
-const usedIdsByLevel = {
-    light: new Set(),
-    warm: new Set(),
-    deep: new Set(),
-};
 
 let currentQuestion = null;
 let currentLevel = "light";
 
-const el = {
-    box: document.getElementById("questionBox"),
-    topic: document.getElementById("topicPill"),
-    answer: document.getElementById("answerInput"),
-    toast: document.getElementById("toast"),
-    toastText: document.getElementById("toastText"),
-};
-
-// Функция выбора случайного вопроса
 function loadNewQuestion() {
-
     const pool = questions.filter(q => q.level === currentLevel);
-    const used = usedIdsByLevel[currentLevel];
-
-    // Находим доступные вопросы (которые ещё не задавались)
-    const available = pool.filter(q => !used.has(q.id));
-
-    // Если больше нет доступных — сбрасываем и начинаем заново
-    if (available.length === 0) {
-        usedIdsByLevel[currentLevel].clear();
-    }
-
-    const freshList = pool.filter(q => !usedIdsByLevel[currentLevel].has(q.id));
-
-    const randomQ = freshList[Math.floor(Math.random() * freshList.length)];
-    currentQuestion = randomQ;
-
-    usedIdsByLevel[currentLevel].add(randomQ.id);
-
-    // Обновление UI
-    el.box.textContent = randomQ.text;
-    el.topic.textContent = "Тема: " + randomQ.topic;
+    const source = pool.length ? pool : questions;
+    const q = source[Math.floor(Math.random() * source.length)];
+    currentQuestion = q;
+    document.getElementById("questionBox").textContent = q.text;
+    document.getElementById("topicPill").textContent = "Тема: " + q.topic;
 }
 
-// Смена уровня
 function setLevel(level) {
     currentLevel = level;
-
-    document.querySelectorAll(".mode-btn")
-        .forEach(btn => btn.classList.toggle("mode-btn--active", btn.dataset.level === level));
-
+    document.querySelectorAll(".mode-btn").forEach(btn => {
+        btn.classList.toggle("mode-btn--active", btn.dataset.level === level);
+    });
     loadNewQuestion();
 }
 
-// Toast сообщение
-function showToast(msg) {
-    el.toastText.textContent = msg;
-    el.toast.style.display = "flex";
-    setTimeout(() => el.toast.style.display = "none", 2000);
+document.addEventListener("DOMContentLoaded", loadNewQuestion);
+
+const webhookUrl = "https://script.google.com/macros/s/AKfycbwGsYzw4o31i9AzDo-kG832v1CtOnWpm8YH-Xvti5sG7_p9-99O27U7sqkqdWzI3nowmQ/exec";
+
+function showToast(message) {
+    const toast = document.getElementById("toast");
+    const text = document.getElementById("toastText");
+    text.textContent = message;
+    toast.style.display = "flex";
+    setTimeout(() => {
+        toast.style.display = "none";
+    }, 2200);
 }
 
-// Отправка ответа (оставляем webhook без изменений)
 function sendAnswer() {
-    const answer = el.answer.value.trim();
-    if (!answer) return showToast("Напиши хотя бы пару слов.");
+    const answerEl = document.getElementById("answerInput");
+    const answer = answerEl.value.trim();
+    if (!answer) {
+        showToast("Напиши хотя бы пару слов — хочется услышать твой голос.");
+        return;
+    }
+    if (!currentQuestion) {
+        showToast("Подожди секунду, загружаю вопрос.");
+        return;
+    }
 
-    fetch("https://script.google.com/macros/s/AKfycbwGsYzw4o31i9AzDo-kG832v1CtOnWpm8YH-Xvti5sG7_p9-99O27U7sqkqdWzI3nowmQ/exec", {
+    fetch(webhookUrl, {
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify({
             questionText: currentQuestion.text,
             topic: currentQuestion.topic,
-            answer,
-            who: "Valeria",
-        }),
+            answer: answer,
+            who: "Valeria"
+        })
+    }).then(() => {
+        answerEl.value = "";
+        loadNewQuestion();
+        showToast("Ответ отправлен — спасибо, что делишься.");
+    }).catch(err => {
+        console.error(err);
+        showToast("Кажется, сеть подвисла. Попробуй ещё раз чуть позже.");
     });
-
-    el.answer.value = "";
-    loadNewQuestion();
-    showToast("Ответ отправлен — спасибо.");
 }
-
-// Инициализация
-document.addEventListener("DOMContentLoaded", loadNewQuestion);
-
 </script>
 </body>
 </html>
