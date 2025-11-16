@@ -490,6 +490,14 @@ let questions = [];
 let currentQuestion = null;
 let currentLevel = "light";
 
+    // Какие вопросы уже показывали по каждому уровню
+const usedIdsByLevel = {
+  light: new Set(),
+  warm: new Set(),
+  deep: new Set(),
+};
+
+
 const el = {
   box: document.getElementById("questionBox"),
   topic: document.getElementById("topicPill"),
@@ -538,22 +546,44 @@ async function loadQuestionsFromSheet() {
   }
 }
 
-/* Выбор случайного вопроса */
+/* Выбор случайного вопроса с циклом по кругу */
 function loadNewQuestion() {
   if (!questions.length) {
     el.box.textContent = "Нет активных вопросов.";
     el.topic.textContent = "Тема: —";
-    return (currentQuestion = null);
+    currentQuestion = null;
+    return;
   }
 
-  const pool = questions.filter(q => q.level === currentLevel);
+  // Все вопросы текущего уровня
+  const pool = questions.filter((q) => q.level === currentLevel);
   const source = pool.length ? pool : questions;
 
-  currentQuestion = source[Math.floor(Math.random() * source.length)];
+  // Берём Set для текущего уровня
+  let usedSet = usedIdsByLevel[currentLevel];
+
+  // Фильтруем только ещё не заданные
+  let available = source.filter((q) => {
+    const key = q.id || q.text;
+    return key && !usedSet.has(key);
+  });
+
+  // Если всё уже показали — очищаем и начинаем новый круг
+  if (!available.length) {
+    usedSet.clear();
+    available = source;
+  }
+
+  // Выбираем случайный вопрос из доступных
+  currentQuestion = available[Math.floor(Math.random() * available.length)];
+
+  const key = currentQuestion.id || currentQuestion.text;
+  if (key) usedSet.add(key);
 
   el.box.textContent = currentQuestion.text || "Пустой вопрос";
   el.topic.textContent = "Тема: " + (currentQuestion.topic || "—");
 }
+
 
 /* Выбор уровня */
 function setLevel(level) {
