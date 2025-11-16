@@ -529,12 +529,12 @@ async function loadQuestionsFromSheet() {
         const v = q.active?.toLowerCase();
         return !v || v === "true" || v === "1" || v === "истина";
       })
-      .map(q => ({
-        id: q.id,
+   .map((q, index) => ({
+        id: index, // уникальный ID по позиции строки
         text: q.question,
         topic: q.topic,
         level: levelMap[q.level?.toLowerCase()] || "light"
-      }));
+}));
 
     if (!questions.length) {
       el.box.textContent = "Нет активных вопросов. Проверь таблицу.";
