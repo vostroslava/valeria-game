@@ -403,113 +403,158 @@
 </div>
 
 <script>
- // URL таблицы
+// URL таблицы
 const SHEET_URL =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vSzvKeCKWOgUi4D4dUTbISt-3bMK3B1QpmqJapgJfFRtpBOkwdrxR_uOU5JJrqltGFFgA0qZxSgJPnb/pub?gid=0&single=true&output=csv";
 
 let questions = [];
 
+// Маппинг уровней: и цифры, и слова
+const levelMap = {
+  "1": "light",
+  "2": "warm",
+  "3": "deep",
+  "light": "light",
+  "warm": "warm",
+  "deep": "deep"
+};
+
 // Простая функция для разбора CSV
 function parseCSV(csv) {
-    const lines = csv.split("\n");
-    const headers = lines[0].split(",").map(h => h.trim());
+  const lines = csv.split("\n").filter(line => line.trim() !== "");
+  if (!lines.length) return [];
 
-    return lines.slice(1).map(line => {
-        const values = line.split(",").map(v => v.trim());
-        let row = {};
-        headers.forEach((key, i) => { row[key] = values[i] });
-        return row;
+  const headers = lines[0].split(",").map(h => h.trim());
+
+  return lines.slice(1).map(line => {
+    const values = line.split(",").map(v => v.trim());
+    let row = {};
+    headers.forEach((key, i) => {
+      row[key] = values[i];
     });
+    return row;
+  });
 }
 
 // Загрузка вопросов из Google Sheets
 async function loadQuestionsFromSheet() {
-    try {
-        const res = await fetch(SHEET_URL);
-        const csv = await res.text();
+  try {
+    const res = await fetch(SHEET_URL);
+    const csv = await res.text();
 
-        questions = parseCSV(csv)
-            .filter(q => q.active === "true")
-            .map(q => ({
-                id: q.id,
-                text: q.question,
-                topic: q.topic,
-                level: q.level
-            }));
-    } catch (e) {
-        console.error(e);
-        document.getElementById("questionBox").textContent = "Ошибка загрузки вопросов.";
+    questions = parseCSV(csv)
+      // фильтр по active: true / TRUE / 1 / ИСТИНА
+      .filter(q => {
+        if (q.active == null) return true; // если пусто — считаем активным
+        const v = String(q.active).trim().toLowerCase();
+        return v === "true" || v === "1" || v === "истина";
+      })
+      .map(q => ({
+        id: q.id,
+        text: q.question,
+        topic: q.topic,
+        level: levelMap[String(q.level).trim().toLowerCase()] || "light"
+      }));
+
+    // На всякий случай: если совсем нет вопросов
+    if (!questions.length) {
+      document.getElementById("questionBox").textContent =
+        "Нет активных вопросов. Проверь таблицу.";
+      document.getElementById("topicPill").textContent = "Тема: —";
     }
+  } catch (e) {
+    console.error(e);
+    document.getElementById("questionBox").textContent =
+      "Ошибка загрузки вопросов.";
+  }
 }
-
 
 let currentQuestion = null;
 let currentLevel = "light";
 
 function loadNewQuestion() {
-    const pool = questions.filter(q => q.level === currentLevel);
-    const source = pool.length ? pool : questions;
-    const q = source[Math.floor(Math.random() * source.length)];
-    currentQuestion = q;
-    document.getElementById("questionBox").textContent = q.text;
-    document.getElementById("topicPill").textContent = "Тема: " + q.topic;
+  if (!questions.length) {
+    document.getElementById("questionBox").textContent =
+      "Нет активных вопросов. Проверь таблицу.";
+    document.getElementById("topicPill").textContent = "Тема: —";
+    currentQuestion = null;
+    return;
+  }
+
+  const pool = questions.filter(q => q.level === currentLevel);
+  const source = pool.length ? pool : questions;
+  const q = source[Math.floor(Math.random() * source.length)];
+
+  if (!q) {
+    document.getElementById("questionBox").textContent =
+      "Не удалось выбрать вопрос.";
+    document.getElementById("topicPill").textContent = "Тема: —";
+    currentQuestion = null;
+    return;
+  }
+
+  currentQuestion = q;
+  document.getElementById("questionBox").textContent = q.text || "Пустой вопрос";
+  document.getElementById("topicPill").textContent = "Тема: " + (q.topic || "—");
 }
 
 function setLevel(level) {
-    currentLevel = level;
-    document.querySelectorAll(".mode-btn").forEach(btn => {
-        btn.classList.toggle("mode-btn--active", btn.dataset.level === level);
-    });
-    loadNewQuestion();
+  currentLevel = level;
+  document.querySelectorAll(".mode-btn").forEach(btn => {
+    btn.classList.toggle("mode-btn--active", btn.dataset.level === level);
+  });
+  loadNewQuestion();
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-    await loadQuestionsFromSheet();
-    loadNewQuestion();
+  await loadQuestionsFromSheet();
+  loadNewQuestion();
 });
 
-
-const webhookUrl = "https://script.google.com/macros/s/AKfycbwGsYzw4o31i9AzDo-kG832v1CtOnWpm8YH-Xvti5sG7_p9-99O27U7sqkqdWzI3nowmQ/exec";
+const webhookUrl =
+  "https://script.google.com/macros/s/AKfycbwGsYzw4o31i9AzDo-kG832v1CtOnWpm8YH-Xvti5sG7_p9-99O27U7sqkqdWzI3nowmQ/exec";
 
 function showToast(message) {
-    const toast = document.getElementById("toast");
-    const text = document.getElementById("toastText");
-    text.textContent = message;
-    toast.style.display = "flex";
-    setTimeout(() => {
-        toast.style.display = "none";
-    }, 2200);
+  const toast = document.getElementById("toast");
+  const text = document.getElementById("toastText");
+  text.textContent = message;
+  toast.style.display = "flex";
+  setTimeout(() => {
+    toast.style.display = "none";
+  }, 2200);
 }
 
 function sendAnswer() {
-    const answerEl = document.getElementById("answerInput");
-    const answer = answerEl.value.trim();
-    if (!answer) {
-        showToast("Напиши хотя бы пару слов — хочется услышать твой голос.");
-        return;
-    }
-    if (!currentQuestion) {
-        showToast("Подожди секунду, загружаю вопрос.");
-        return;
-    }
+  const answerEl = document.getElementById("answerInput");
+  const answer = answerEl.value.trim();
+  if (!answer) {
+    showToast("Напиши хотя бы пару слов — хочется услышать твой голос.");
+    return;
+  }
+  if (!currentQuestion) {
+    showToast("Подожди секунду, загружаю вопрос.");
+    return;
+  }
 
-    fetch(webhookUrl, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({
-            questionText: currentQuestion.text,
-            topic: currentQuestion.topic,
-            answer: answer,
-            who: "Valeria"
-        })
-    }).then(() => {
-        answerEl.value = "";
-        loadNewQuestion();
-        showToast("Ответ отправлен — спасибо, что делишься.");
-    }).catch(err => {
-        console.error(err);
-        showToast("Кажется, сеть подвисла. Попробуй ещё раз чуть позже.");
+  fetch(webhookUrl, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({
+      questionText: currentQuestion.text,
+      topic: currentQuestion.topic,
+      answer: answer,
+      who: "Valeria"
+    })
+  })
+    .then(() => {
+      answerEl.value = "";
+      loadNewQuestion();
+      showToast("Ответ отправлен — спасибо, что делишься.");
+    })
+    .catch(err => {
+      console.error(err);
+      showToast("Кажется, сеть подвисла. Попробуй ещё раз чуть позже.");
     });
 }
 </script>
