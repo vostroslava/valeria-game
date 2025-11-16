@@ -134,30 +134,90 @@
             background: radial-gradient(circle at 0 0, rgba(255,122,196,0.25) 0, transparent 60%);
         }
 
-        /* Новый блок: выбор глубины вопросов */
-        .modes {
-            display: flex;
-            gap: 6px;
-            margin: 4px 0 12px;
-            flex-wrap: wrap;
-        }
+       /* Блок выбора уровня — отдельная карточка */
+.modes-block {
+    margin: 10px 0 16px;
+    padding: 10px 12px 12px;
+    border-radius: 18px;
+    background:
+        radial-gradient(circle at 0 0, rgba(255,122,196,0.18) 0, transparent 60%),
+        rgba(8, 8, 24, 0.96);
+    border: 1px solid rgba(255,255,255,0.12);
+    box-shadow: 0 16px 30px rgba(0,0,0,0.65);
+}
 
-        .mode-btn {
-            padding: 4px 10px;
-            border-radius: 999px;
-            font-size: 11px;
-            border: 1px solid rgba(255,255,255,0.16);
-            background: rgba(255,255,255,0.02);
-            color: var(--text-muted);
-            cursor: pointer;
-        }
+/* Заголовок над кнопками */
+.modes-title {
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
 
-        .mode-btn--active {
-            border-color: rgba(255,122,196,0.8);
-            background: radial-gradient(circle at 0 0, rgba(255,122,196,0.35) 0, transparent 60%);
-            color: #ffe7f7;
-        }
+/* Ряд кнопок уровней */
+.modes {
+    display: flex;
+    gap: 8px;
+}
 
+/* Объёмные кнопки уровней — крупнее и 3D */
+.mode-btn {
+    flex: 1;
+    padding: 10px 0;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid rgba(255,255,255,0.18);
+    background: radial-gradient(circle at 0 0, rgba(255,255,255,0.08) 0, transparent 60%),
+                linear-gradient(145deg, rgba(20,20,40,0.98), rgba(10,10,26,1));
+    color: var(--text-muted);
+    cursor: pointer;
+    box-shadow:
+        0 10px 22px rgba(0,0,0,0.8),
+        0 0 0 1px rgba(0,0,0,0.6);
+    transform: translateZ(0);
+    transition:
+        transform 0.13s ease,
+        box-shadow 0.15s ease,
+        background 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease;
+    white-space: nowrap;
+}
+
+.mode-btn:hover {
+    transform: translateY(-1px);
+    box-shadow:
+        0 14px 30px rgba(0,0,0,0.9),
+        0 0 0 1px rgba(0,0,0,0.7);
+    background: radial-gradient(circle at 0 0, rgba(255,255,255,0.1) 0, transparent 60%),
+                linear-gradient(145deg, rgba(30,30,60,1), rgba(12,12,30,1));
+}
+
+/* Активная кнопка уровня — заметный градиент и подсветка */
+.mode-btn--active {
+    border-color: rgba(255,122,196,0.9);
+    color: #1b0614;
+    background:
+        radial-gradient(circle at 0 0, rgba(255,255,255,0.18) 0, transparent 60%),
+        linear-gradient(135deg, #ff7ac4, #ffb86b);
+    box-shadow:
+        0 16px 34px rgba(0,0,0,0.95),
+        0 0 22px rgba(255,122,196,0.9);
+}
+
+/* На мобильных — чуть компактнее, но всё ещё объёмно */
+@media (max-width: 480px) {
+    .modes-block {
+        padding: 9px 10px 10px;
+        margin: 8px 0 14px;
+    }
+    .mode-btn {
+        font-size: 12px;
+        padding: 9px 0;
+    }
+}
         .card {
             margin-top: 6px;
             padding: 18px 16px 16px;
@@ -356,17 +416,26 @@
     </header>
 
     <div class="chip-row">
-        <div class="chip chip--accent">Singer · Live</div>
-        <div class="chip">Soul talk</div>
-        <div class="chip">1&nbsp;вопрос за раз</div>
-    </div>
+    <div class="chip chip--accent">Singer · Live</div>
+    <div class="chip">Soul talk</div>
+    <div class="chip">1&nbsp;вопрос за раз</div>
+</div>
 
-    <!-- Новый блок: режимы глубины -->
+<div class="modes-block">
+    <div class="modes-title">Выбери уровень вопроса</div>
     <div class="modes">
-        <button class="mode-btn mode-btn--active" data-level="light" onclick="setLevel('light')">Легко</button>
-        <button class="mode-btn" data-level="warm" onclick="setLevel('warm')">Тепло</button>
-        <button class="mode-btn" data-level="deep" onclick="setLevel('deep')">Глубже</button>
+        <button class="mode-btn mode-btn--active" data-level="light" onclick="setLevel('light')">
+            Легко
+        </button>
+        <button class="mode-btn" data-level="warm" onclick="setLevel('warm')">
+            Тепло
+        </button>
+        <button class="mode-btn" data-level="deep" onclick="setLevel('deep')">
+            Глубже
+        </button>
     </div>
+</div>
+
 
     <section class="card">
         <div class="card-inner">
