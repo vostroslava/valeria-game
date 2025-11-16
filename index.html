@@ -471,166 +471,107 @@
     <div id="toastText">Ответ отправлен.</div>
 </div>
 <script>
-const SHEET_URL =
-  "https://docs.google.com/spreadsheets/d/e/2PACX-1vSzvKeCKWOgUi4D4dUTbISt-3bMK3B1QpmqJapgJfFRtpBOkwdrxR_uOU5JJrqltGFFgA0qZxSgJPnb/pub?gid=0&single=true&output=csv";
 
-const webhookUrl =
-  "https://script.google.com/macros/s/AKfycbwGsYzw4o31i9AzDo-kG832v1CtOnWpm8YH-Xvti5sG7_p9-99O27U7sqkqdWzI3nowmQ/exec";
+// ЛОКАЛЬНАЯ БАЗА ВОПРОСОВ — тут редактируешь вручную
+const questions = [
+    { id: 1, text: "Какой момент этого года сделал тебя счастливее всего?", topic: "Отношения", level: "light" },
+    { id: 2, text: "О чём ты мечтала в детстве больше всего?", topic: "Детство", level: "light" },
+    { id: 3, text: "Что для тебя идеальное утро?", topic: "Быт", level: "light" },
+    { id: 4, text: "Как выглядит человек, которому ты безоговорочно доверяешь?", topic: "Психология", level: "warm" },
+    { id: 5, text: "Какое чувство ты скрываешь чаще всего?", topic: "Эмоции", level: "warm" },
+    { id: 6, text: "Какая рана тебя сформировала?", topic: "Глубина", level: "deep" },
+    { id: 7, text: "Какое решение в жизни оказалось самым правильным?", topic: "Жизнь", level: "warm" },
+    { id: 8, text: "Что ты считаешь своей сильнейшей чертой?", topic: "Личность", level: "light" },
+    { id: 9, text: "Что бы ты сказала себе 16-летней?", topic: "Саморефлексия", level: "deep" },
+    { id: 10, text: "Когда ты чувствуешь себя любимой?", topic: "Отношения", level: "deep" }
+];
 
-const levelMap = {
-  "1": "light",
-  "2": "warm",
-  "3": "deep",
-  light: "light",
-  warm: "warm",
-  deep: "deep"
+// Память о пройденных вопросах для каждого уровня
+const usedIdsByLevel = {
+    light: new Set(),
+    warm: new Set(),
+    deep: new Set(),
 };
 
-let questions = [];
 let currentQuestion = null;
 let currentLevel = "light";
 
-    // Какие вопросы уже показывали по каждому уровню
-const usedIdsByLevel = {
-  light: new Set(),
-  warm: new Set(),
-  deep: new Set(),
-};
-
-
 const el = {
-  box: document.getElementById("questionBox"),
-  topic: document.getElementById("topicPill"),
-  answer: document.getElementById("answerInput"),
-  toast: document.getElementById("toast"),
-  toastText: document.getElementById("toastText"),
+    box: document.getElementById("questionBox"),
+    topic: document.getElementById("topicPill"),
+    answer: document.getElementById("answerInput"),
+    toast: document.getElementById("toast"),
+    toastText: document.getElementById("toastText"),
 };
 
-/* Универсальный CSV-парсер с поддержкой кавычек */
-function parseCSV(csv) {
-  return csv
-    .trim()
-    .split("\n")
-    .map(line => line.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g).map(v => v.replace(/^"|"$/g, "")));
-}
-
-/* Загрузка вопросов */
-async function loadQuestionsFromSheet() {
-  try {
-    const csv = await (await fetch(SHEET_URL)).text();
-    const rows = parseCSV(csv);
-    const headers = rows.shift().map(h => h.trim());
-
-    questions = rows
-      .map(values =>
-        Object.fromEntries(headers.map((k, i) => [k, values[i] || ""]))
-      )
-      .filter(q => {
-        const v = q.active?.toLowerCase();
-        return !v || v === "true" || v === "1" || v === "истина";
-      })
-   .map((q, index) => ({
-        id: index, // уникальный ID по позиции строки
-        text: q.question,
-        topic: q.topic,
-        level: levelMap[q.level?.toLowerCase()] || "light"
-}));
-
-    if (!questions.length) {
-      el.box.textContent = "Нет активных вопросов. Проверь таблицу.";
-      el.topic.textContent = "Тема: —";
-    }
-  } catch (e) {
-    console.error(e);
-    el.box.textContent = "Ошибка загрузки вопросов.";
-  }
-}
-
-/* Выбор случайного вопроса с циклом по кругу */
+// Функция выбора случайного вопроса
 function loadNewQuestion() {
-  if (!questions.length) {
-    el.box.textContent = "Нет активных вопросов.";
-    el.topic.textContent = "Тема: —";
-    currentQuestion = null;
-    return;
-  }
 
-  // Все вопросы текущего уровня
-  const pool = questions.filter((q) => q.level === currentLevel);
-  const source = pool.length ? pool : questions;
+    const pool = questions.filter(q => q.level === currentLevel);
+    const used = usedIdsByLevel[currentLevel];
 
-  // Берём Set для текущего уровня
-  let usedSet = usedIdsByLevel[currentLevel];
+    // Находим доступные вопросы (которые ещё не задавались)
+    const available = pool.filter(q => !used.has(q.id));
 
-  // Фильтруем только ещё не заданные
-  let available = source.filter((q) => {
-    const key = q.id || q.text;
-    return key && !usedSet.has(key);
-  });
+    // Если больше нет доступных — сбрасываем и начинаем заново
+    if (available.length === 0) {
+        usedIdsByLevel[currentLevel].clear();
+    }
 
-  // Если всё уже показали — очищаем и начинаем новый круг
-  if (!available.length) {
-    usedSet.clear();
-    available = source;
-  }
+    const freshList = pool.filter(q => !usedIdsByLevel[currentLevel].has(q.id));
 
-  // Выбираем случайный вопрос из доступных
-  currentQuestion = available[Math.floor(Math.random() * available.length)];
+    const randomQ = freshList[Math.floor(Math.random() * freshList.length)];
+    currentQuestion = randomQ;
 
-  const key = currentQuestion.id || currentQuestion.text;
-  if (key) usedSet.add(key);
+    usedIdsByLevel[currentLevel].add(randomQ.id);
 
-  el.box.textContent = currentQuestion.text || "Пустой вопрос";
-  el.topic.textContent = "Тема: " + (currentQuestion.topic || "—");
+    // Обновление UI
+    el.box.textContent = randomQ.text;
+    el.topic.textContent = "Тема: " + randomQ.topic;
 }
 
-
-/* Выбор уровня */
+// Смена уровня
 function setLevel(level) {
-  currentLevel = level;
-  document
-    .querySelectorAll(".mode-btn")
-    .forEach(b => b.classList.toggle("mode-btn--active", b.dataset.level === level));
+    currentLevel = level;
 
-  loadNewQuestion();
+    document.querySelectorAll(".mode-btn")
+        .forEach(btn => btn.classList.toggle("mode-btn--active", btn.dataset.level === level));
+
+    loadNewQuestion();
 }
 
-/* Toast */
-function showToast(message) {
-  el.toastText.textContent = message;
-  el.toast.style.display = "flex";
-  setTimeout(() => (el.toast.style.display = "none"), 2000);
+// Toast сообщение
+function showToast(msg) {
+    el.toastText.textContent = msg;
+    el.toast.style.display = "flex";
+    setTimeout(() => el.toast.style.display = "none", 2000);
 }
 
-/* Отправка ответа */
+// Отправка ответа (оставляем webhook без изменений)
 function sendAnswer() {
-  const answer = el.answer.value.trim();
+    const answer = el.answer.value.trim();
+    if (!answer) return showToast("Напиши хотя бы пару слов.");
 
-  if (!answer) return showToast("Напиши хотя бы пару слов.");
-  if (!currentQuestion) return showToast("Вопрос загружается.");
+    fetch("https://script.google.com/macros/s/AKfycbwGsYzw4o31i9AzDo-kG832v1CtOnWpm8YH-Xvti5sG7_p9-99O27U7sqkqdWzI3nowmQ/exec", {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({
+            questionText: currentQuestion.text,
+            topic: currentQuestion.topic,
+            answer,
+            who: "Valeria",
+        }),
+    });
 
-  fetch(webhookUrl, {
-    method: "POST",
-    mode: "no-cors",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify({
-      questionText: currentQuestion.text,
-      topic: currentQuestion.topic,
-      answer,
-      who: "Valeria",
-    }),
-  }).then(() => {
     el.answer.value = "";
     loadNewQuestion();
     showToast("Ответ отправлен — спасибо.");
-  });
 }
 
-document.addEventListener("DOMContentLoaded", async () => {
-  await loadQuestionsFromSheet();
-  loadNewQuestion();
-});
-</script>
+// Инициализация
+document.addEventListener("DOMContentLoaded", loadNewQuestion);
 
+</script>
 </body>
 </html>
